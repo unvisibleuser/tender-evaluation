@@ -1,0 +1,25 @@
+# Illustrative only. Populate from the specific tender and officer-approved interpretation.
+tender_id: DEMO-POWER-001
+submission:
+  mode: portal_upload
+  technical_channel: technical_upload
+  commercial_channel: separate_sealed_upload
+  commercial_separation_mode: separate_storage_namespace
+  deadline: "2026-12-01T16:00:00+05:30"
+  timezone: Asia/Kolkata
+commercial:
+  mechanism: sealed_bid  # do not change to reverse_auction unless tender explicitly authorizes it
+  opening_gate:
+    requires_technical_responsive: true
+    authorized_roles: [commercial_opening_officer, tender_approver]
+    dual_control_required: true
+evaluation:
+  technical_method: tender_defined
+  commercial_method: tender_defined
+  combined_method: null  # null means no combined ranking until a published formula is configured
+clarification:
+  policy: tender_defined
+  allow_new_eligibility_documents_after_deadline: false
+security:
+  commercial_data_hidden_until_opening: true
+  document_workers_network_access: false

@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/rulebook.schema.json",
+  "title": "Tender Rulebook Draft",
+  "type": "object",
+  "required": [
+    "tender_id",
+    "version",
+    "status",
+    "criteria",
+    "document_requirements",
+    "workflow"
+  ],
+  "properties": {
+    "tender_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "NEEDS_OFFICER_INPUT",
+        "APPROVED",
+        "PUBLISHED"
+      ]
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion_id",
+          "name",
+          "category",
+          "stage",
+          "mandatory",
+          "operator",
+          "source_references",
+          "review_policy"
+        ],
+        "properties": {
+          "criterion_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "enum": [
+              "eligibility",
+              "administrative",
+              "technical",
+              "experience",
+              "financial_capacity",
+              "declaration",
+              "supporting_document",
+              "commercial"
+            ]
+          },
+          "stage": {
+            "enum": [
+              "pre_check",
+              "technical",
+              "commercial",
+              "final"
+            ]
+          },
+          "mandatory": {
+            "type": "boolean"
+          },
+          "field_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data_type": {
+            "enum": [
+              "string",
+              "integer",
+              "decimal",
+              "boolean",
+              "date",
+              "money",
+              "document",
+              "list",
+              "manual"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "operator": {
+            "type": "string"
+          },
+          "expected_value": {},
+          "interpretation": {
+            "enum": [
+              "explicit",
+              "normalized",
+              "officer_defined",
+              "unresolved"
+            ]
+          },
+          "source_references": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "artifact",
+                "page"
+              ],
+              "properties": {
+                "artifact": {
+                  "type": "string"
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "clause": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "quote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "review_policy": {
+            "type": "object"
+          },
+          "failure_consequence": {
+            "type": "string"
+          },
+          "scoring": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "document_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "workflow": {
+      "type": "object"
+    }
+  }
+}
