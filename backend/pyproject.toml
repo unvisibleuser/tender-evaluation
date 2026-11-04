@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tender-eval-backend"
+version = "0.1.0"
+description = "Tender Scrutiny & Evaluation Portal — backend (MVP)"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlalchemy>=2.0",
+  "alembic>=1.13",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "python-multipart>=0.0.9",
+  "pymupdf>=1.24",
+  "cryptography>=42",
+  "tzdata>=2024.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*", "rule_engine*"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.5", "mypy>=1.10"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "BLE"]
+ignore = ["S101", "B008"]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 125
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+"app/scripts/*" = ["S"]
+"alembic/versions/*" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+exclude = ["alembic/", "tests/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[[tool.mypy.overrides]]
+# PyMuPDF has no type hints; untyped calls are confined to these adapter modules.
+module = ["app.modules.processing.pdf", "app.demo.synthetic"]
+disallow_untyped_calls = false

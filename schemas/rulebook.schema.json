@@ -1,169 +1,439 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/schemas/rulebook.schema.json",
-  "title": "Tender Rulebook Draft",
-  "type": "object",
-  "required": [
-    "tender_id",
-    "version",
-    "status",
-    "criteria",
-    "document_requirements",
-    "workflow"
-  ],
-  "properties": {
-    "tender_id": {
-      "type": "string"
-    },
-    "version": {
-      "type": "string"
-    },
-    "status": {
-      "enum": [
-        "DRAFT",
-        "NEEDS_OFFICER_INPUT",
-        "APPROVED",
-        "PUBLISHED"
-      ]
-    },
-    "criteria": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "criterion_id",
-          "name",
-          "category",
-          "stage",
-          "mandatory",
-          "operator",
-          "source_references",
-          "review_policy"
-        ],
-        "properties": {
-          "criterion_id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "category": {
-            "enum": [
-              "eligibility",
-              "administrative",
-              "technical",
-              "experience",
-              "financial_capacity",
-              "declaration",
-              "supporting_document",
-              "commercial"
-            ]
-          },
-          "stage": {
-            "enum": [
-              "pre_check",
-              "technical",
-              "commercial",
-              "final"
-            ]
-          },
-          "mandatory": {
-            "type": "boolean"
-          },
-          "field_key": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "data_type": {
-            "enum": [
-              "string",
-              "integer",
-              "decimal",
-              "boolean",
-              "date",
-              "money",
-              "document",
-              "list",
-              "manual"
-            ]
-          },
-          "unit": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "operator": {
-            "type": "string"
-          },
-          "expected_value": {},
-          "interpretation": {
-            "enum": [
-              "explicit",
-              "normalized",
-              "officer_defined",
-              "unresolved"
-            ]
-          },
-          "source_references": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "required": [
-                "artifact",
-                "page"
-              ],
-              "properties": {
-                "artifact": {
-                  "type": "string"
-                },
-                "page": {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                "clause": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "quote": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              }
-            }
-          },
-          "review_policy": {
-            "type": "object"
-          },
-          "failure_consequence": {
-            "type": "string"
-          },
-          "scoring": {
-            "type": [
-              "object",
-              "null"
-            ]
-          }
+  "$defs": {
+    "ApplicabilityCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "field_key": {
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Field Key",
+          "type": "string"
+        },
+        "operator": {
+          "$ref": "#/$defs/Operator"
+        },
+        "value": {
+          "$ref": "#/$defs/JsonValue",
+          "default": null
+        },
+        "if_unknown": {
+          "$ref": "#/$defs/UnknownApplicability",
+          "default": "REVIEW"
         }
-      }
+      },
+      "required": [
+        "field_key",
+        "operator"
+      ],
+      "title": "ApplicabilityCondition",
+      "type": "object"
+    },
+    "Criterion": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "pattern": "^[A-Z0-9][A-Z0-9_\\-]{1,63}$",
+          "title": "Criterion Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Description",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/CriterionCategory"
+        },
+        "stage": {
+          "const": "technical",
+          "default": "technical",
+          "title": "Stage",
+          "type": "string"
+        },
+        "mandatory": {
+          "default": true,
+          "title": "Mandatory",
+          "type": "boolean"
+        },
+        "operator": {
+          "$ref": "#/$defs/Operator"
+        },
+        "field_key": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{1,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Key"
+        },
+        "doc_class": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{1,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Doc Class"
+        },
+        "expected": {
+          "$ref": "#/$defs/JsonValue",
+          "default": null
+        },
+        "evaluation_date_basis": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateBasis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "basis_fixed_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Basis Fixed Date"
+        },
+        "applies_if": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicabilityCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interpretation": {
+          "$ref": "#/$defs/Interpretation",
+          "default": "explicit"
+        },
+        "failure_consequence": {
+          "$ref": "#/$defs/FailureConsequence",
+          "default": "OFFICER_DECISION"
+        },
+        "source_references": {
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "title": "Source References",
+          "type": "array"
+        },
+        "scoring": {
+          "default": null,
+          "description": "Scoring is not supported in the MVP; must be null (REQUIRES_OFFICER_CONFIGURATION).",
+          "title": "Scoring",
+          "type": "null"
+        }
+      },
+      "required": [
+        "criterion_id",
+        "name",
+        "category",
+        "operator"
+      ],
+      "title": "Criterion",
+      "type": "object"
+    },
+    "CriterionCategory": {
+      "enum": [
+        "eligibility",
+        "administrative",
+        "technical",
+        "experience",
+        "financial_capacity",
+        "declaration",
+        "supporting_document"
+      ],
+      "title": "CriterionCategory",
+      "type": "string"
+    },
+    "DataType": {
+      "enum": [
+        "string",
+        "integer",
+        "decimal",
+        "money",
+        "date",
+        "boolean"
+      ],
+      "title": "DataType",
+      "type": "string"
+    },
+    "DateBasis": {
+      "enum": [
+        "SUBMISSION_DEADLINE",
+        "BID_SUBMITTED_AT",
+        "FIXED_DATE"
+      ],
+      "title": "DateBasis",
+      "type": "string"
+    },
+    "DocumentRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "doc_class": {
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Doc Class",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "keywords": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Keywords",
+          "type": "array"
+        },
+        "mandatory": {
+          "default": true,
+          "title": "Mandatory",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "doc_class",
+        "name",
+        "keywords"
+      ],
+      "title": "DocumentRequirement",
+      "type": "object"
+    },
+    "FailureConsequence": {
+      "enum": [
+        "OFFICER_DECISION",
+        "TENDER_STATED_REJECTION"
+      ],
+      "title": "FailureConsequence",
+      "type": "string"
+    },
+    "FieldDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "field_key": {
+          "pattern": "^[a-z][a-z0-9_]{1,63}$",
+          "title": "Field Key",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "data_type": {
+          "$ref": "#/$defs/DataType"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "maxLength": 20,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Aliases",
+          "type": "array"
+        },
+        "doc_classes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Doc Classes",
+          "type": "array"
+        },
+        "critical": {
+          "default": true,
+          "title": "Critical",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "field_key",
+        "label",
+        "data_type",
+        "aliases"
+      ],
+      "title": "FieldDefinition",
+      "type": "object"
+    },
+    "Interpretation": {
+      "enum": [
+        "explicit",
+        "normalized",
+        "officer_defined",
+        "unresolved"
+      ],
+      "title": "Interpretation",
+      "type": "string"
+    },
+    "JsonValue": {},
+    "Operator": {
+      "enum": [
+        "EQ",
+        "NEQ",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "BETWEEN",
+        "IN",
+        "NOT_IN",
+        "CONTAINS",
+        "DOCUMENT_PRESENT",
+        "DATE_VALID_ON",
+        "DATE_NOT_AFTER",
+        "MANUAL_REVIEW_REQUIRED"
+      ],
+      "title": "Operator",
+      "type": "string"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Artifact Id"
+        },
+        "document_title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Document Title",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "clause": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clause"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "document_title",
+        "page"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "UnknownApplicability": {
+      "description": "Officer-configured handling when an applicability condition's input is unavailable.",
+      "enum": [
+        "REVIEW",
+        "APPLIES",
+        "NOT_APPLICABLE"
+      ],
+      "title": "UnknownApplicability",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "fields": {
+      "items": {
+        "$ref": "#/$defs/FieldDefinition"
+      },
+      "title": "Fields",
+      "type": "array"
     },
     "document_requirements": {
-      "type": "array",
       "items": {
-        "type": "object"
-      }
+        "$ref": "#/$defs/DocumentRequirement"
+      },
+      "title": "Document Requirements",
+      "type": "array"
     },
-    "workflow": {
-      "type": "object"
+    "criteria": {
+      "items": {
+        "$ref": "#/$defs/Criterion"
+      },
+      "title": "Criteria",
+      "type": "array"
     }
-  }
+  },
+  "title": "Tender Rulebook Content (generated from app.modules.rulebooks.schemas.RulebookContent)",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
 }
