@@ -12,6 +12,7 @@ services:
       TENDER_ENVIRONMENT: demo
       TENDER_TOKEN_SECRET: ${TENDER_TOKEN_SECRET:-dev-only-insecure-secret-change-me}
       TENDER_SEED_DEMO: ${TENDER_SEED_DEMO:-true}
+      TENDER_SEED_STAGE: ${TENDER_SEED_STAGE:-technical}   # open | technical
     volumes:
       - tender-data:/data
     restart: unless-stopped

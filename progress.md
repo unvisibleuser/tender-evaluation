@@ -14,7 +14,7 @@ Details of scope and deviations: `docs/MVP_IMPLEMENTATION.md`.
 - ✅ Dev officer login with roles (tender admin, approver, technical evaluator, commercial officer, auditor)
 - ✅ Hash-chained append-only audit trail (DB triggers block update/delete) + verify endpoint
 - ✅ Idempotency keys on bid submission
-- ✅ Synthetic demo data + seed script (3 bidders, sample PDFs in `examples/synthetic/`)
+- ✅ Synthetic demo data + seed script (3 bidders, sample PDFs in `examples/synthetic/`); `--stage technical` walkthrough state for demo video (A responsive, B non-responsive, C in review queue)
 
 ### Rulebook & rules
 - ✅ Rulebook schema (Pydantic is source of truth; JSON schema generated + drift test)
