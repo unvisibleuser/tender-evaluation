@@ -60,6 +60,21 @@ Never seed real bidder data or real tender documents into a public demo environm
 
 ## Running the MVP
 
+### Option A — Docker (everything in containers)
+
+```bash
+docker compose up --build      # then open http://localhost:8080
+docker compose down            # stop; data persists in the "tender-data" volume
+docker compose down -v         # stop and wipe all data
+```
+
+Starts the API (SQLite + encrypted storage on a volume, synthetic demo tender seeded on first start) and nginx
+serving the frontend and proxying `/api`. Only port 8080 is published. Set `TENDER_SEED_DEMO=false` to skip seeding.
+Demo only: passwordless officer sign-in, and the commercial encryption key is stored on the same volume as the data.
+Sample PDFs for the walkthrough are in `examples/synthetic/`.
+
+### Option B — Local without Docker
+
 Prerequisites: Python 3.12+ and Node 20+. No Docker is required for the MVP (SQLite + local encrypted storage).
 
 ```bash

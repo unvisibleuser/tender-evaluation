@@ -1,0 +1,39 @@
+# MVP / demo stack: API (SQLite + local encrypted storage on a volume) and nginx serving the SPA.
+# Run:  docker compose up --build        then open http://localhost:8080
+# Stop: docker compose down              (data persists in the "tender-data" volume)
+# Reset all data: docker compose down -v
+#
+# DEMO ONLY: officer sign-in is the passwordless demo mode, the commercial encryption key lives on the
+# same volume as the ciphertext, and PDFs are parsed inside the API container. See docs/MVP_IMPLEMENTATION.md.
+services:
+  backend:
+    build: ./backend
+    environment:
+      TENDER_ENVIRONMENT: demo
+      TENDER_TOKEN_SECRET: ${TENDER_TOKEN_SECRET:-dev-only-insecure-secret-change-me}
+      TENDER_SEED_DEMO: ${TENDER_SEED_DEMO:-true}
+    volumes:
+      - tender-data:/data
+    restart: unless-stopped
+    # Not published to the host: reachable only through the frontend proxy.
+    expose:
+      - "8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  tender-data:

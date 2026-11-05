@@ -43,6 +43,9 @@ Details of scope and deviations: `docs/MVP_IMPLEMENTATION.md`.
 - ✅ Two-officer authorisation (quorum) and opening; only technically responsive bids opened
 - ✅ L1 ranking only when tender configures the method; no combined ranking
 
+### Packaging
+- 🟡 Docker: `docker-compose.yml` + backend/frontend Dockerfiles (API + nginx, data volume, non-root, read-only FS). **Written but not yet built or run** — Docker was not installed on the dev machine
+
 ### Frontend
 - ✅ Landing, bidder portal (list, submit, printable receipt), officer sign-in
 - ✅ Tender list/create, workspace with stage actions, documents, rulebook view/JSON editor, bids, review queue, evaluation matrix + decisions, commercial tab, audit trail
@@ -54,7 +57,7 @@ Details of scope and deviations: `docs/MVP_IMPLEMENTATION.md`.
 - ⬜ Proper task queue (currently in-process threads)
 - ⬜ KMS/HSM for the encryption key (currently local file / env var)
 - ⬜ Real identity provider with MFA (currently demo login); officer-machine/network restriction (deferred by request)
-- ⬜ S3/MinIO object storage (currently local disk); Postgres deployment + Docker Compose (`docker-compose.yml` still empty)
+- ⬜ S3/MinIO object storage (currently local disk); Postgres deployment
 - ⬜ Per-tender role assignment and multiple organisations (roles are global)
 - ⬜ Threat model, penetration test, PDF fuzzing, backup/restore, accessibility audit
 
