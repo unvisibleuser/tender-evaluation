@@ -57,3 +57,57 @@ The eventual repository should provide these root commands (implement them as pa
 - `make seed-demo` — load synthetic demonstration data only.
 
 Never seed real bidder data or real tender documents into a public demo environment.
+
+## Running the MVP
+
+### Option A — Docker (everything in containers)
+
+```bash
+docker compose up --build      # then open http://localhost:8080
+docker compose down            # stop; data persists in the "tender-data" volume
+docker compose down -v         # stop and wipe all data
+```
+
+Starts the API (SQLite + encrypted storage on a volume, synthetic demo tender seeded on first start) and nginx
+serving the frontend and proxying `/api`. Only port 8080 is published. Set `TENDER_SEED_DEMO=false` to skip seeding.
+Demo only: passwordless officer sign-in, and the commercial encryption key is stored on the same volume as the data.
+Sample PDFs for the walkthrough are in `examples/synthetic/`.
+
+### Option B — Local without Docker
+
+Prerequisites: Python 3.12+ and Node 20+. No Docker is required for the MVP (SQLite + local encrypted storage).
+
+```bash
+# Backend
+cd backend
+python -m venv .venv
+.venv/Scripts/pip install -e ".[dev]"        # Linux/macOS: .venv/bin/pip
+.venv/Scripts/python -m app.scripts.seed_demo --write-samples ../examples/synthetic   # migrate + seed synthetic tender
+.venv/Scripts/python -m uvicorn app.main:app --port 8000
+
+# Frontend (second terminal)
+cd frontend
+npm install
+npm run dev        # http://localhost:5173  (proxies /api to :8000)
+```
+
+Demo walkthrough (all data synthetic):
+1. `http://localhost:5173/portal` — submit bids using `examples/synthetic/bidder-{A,B,C}-technical.pdf`,
+   the matching `-price-bid.pdf`, and the details in `bidder-*-details.txt`.
+2. Officer sign-in as `admin` → tender → Overview → **Close submissions** (early close allowed in demo mode only).
+3. `evaluator` → Bid submissions / Review queue → verify or correct flagged fields on the evidence viewer.
+4. `admin` → **Start technical evaluation**; `evaluator` → Technical evaluation → **Run**.
+5. `approver` → record a decision per bid → **Complete technical evaluation**.
+6. `commercial1` and `commercial2` → Commercial → **Authorise**; then **Open** → **Compute ranking**.
+7. `auditor` → Audit trail → **Verify audit hash chain**.
+
+Use `--with-bids` on the seed script to pre-submit the three synthetic bids.
+
+Checks:
+
+```bash
+cd backend && .venv/Scripts/python -m pytest && .venv/Scripts/ruff check app rule_engine tests alembic && .venv/Scripts/mypy app rule_engine
+cd frontend && npx tsc -p tsconfig.json --noEmit && npm run build
+```
+
+See `docs/MVP_IMPLEMENTATION.md` for scope decisions, enforced security boundaries and known limitations.
