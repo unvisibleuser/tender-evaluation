@@ -69,7 +69,7 @@ docker compose down -v         # stop and wipe all data
 ```
 
 Starts the API (SQLite + encrypted storage on a volume, synthetic demo tender seeded on first start) and nginx
-serving the frontend and proxying `/api`. Only port 8080 is published. Set `TENDER_SEED_DEMO=false` to skip seeding.
+serving the frontend and proxying `/api`. Only port 8080 is published. The demo starts in the **technical stage** (3 bids in, submissions closed, evaluated; two decided, one in the review queue). Set `TENDER_SEED_STAGE=open` to start with the tender open for live bidder submission, or `TENDER_SEED_DEMO=false` to skip seeding. To switch an existing volume, run `docker compose down -v` first.
 Demo only: passwordless officer sign-in, and the commercial encryption key is stored on the same volume as the data.
 Sample PDFs for the walkthrough are in `examples/synthetic/`.
 
@@ -90,6 +90,10 @@ cd frontend
 npm install
 npm run dev        # http://localhost:5173  (proxies /api to :8000)
 ```
+
+Seed options: `python -m app.scripts.seed_demo --stage technical` puts the demo tender into the technical stage
+(bids submitted, evaluated, two decided, one in the review queue). The default `--stage open` leaves it open for bids.
+On an existing database `--stage technical` advances the existing tender (only if it is still open).
 
 Demo walkthrough (all data synthetic):
 1. `http://localhost:5173/portal` — submit bids using `examples/synthetic/bidder-{A,B,C}-technical.pdf`,
